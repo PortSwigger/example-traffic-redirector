@@ -1,17 +1,16 @@
 from burp import IBurpExtender
 from burp import IHttpListener
 
+HOST_FROM = "host1.example.org"
+HOST_TO = "host2.example.org"
+
 class BurpExtender(IBurpExtender, IHttpListener):
-    
-    HOST_FROM = "host1.example.org"
-    HOST_TO = "host2.example.org"
-    
+
     #
     # implement IBurpExtender
     #
     
     def	registerExtenderCallbacks(self, callbacks):
-        
         # obtain an extension helpers object
         self._helpers = callbacks.getHelpers()
         
@@ -20,25 +19,20 @@ class BurpExtender(IBurpExtender, IHttpListener):
         
         # register ourselves as an HTTP listener
         callbacks.registerHttpListener(self)
-        
-        return
 
     #
     # implement IHttpListener
     #
     
     def processHttpMessage(self, toolFlag, messageIsRequest, messageInfo):
-        
         # only process requests
-        if messageIsRequest:
-        
-            # get the HTTP service for the request
-            httpService = messageInfo.getHttpService()
-            
-            # if the host is HOST_FROM, change it to HOST_TO
-            if (BurpExtender.HOST_FROM == httpService.getHost()):
-                messageInfo.setHttpService(self._helpers.buildHttpService(BurpExtender.HOST_TO, httpService.getPort(), httpService.getProtocol()))
-        
-        return
+        if not messageIsRequest:
+            return
 
-      
+        # get the HTTP service for the request
+        httpService = messageInfo.getHttpService()
+        
+        # if the host is HOST_FROM, change it to HOST_TO
+        if (HOST_FROM == httpService.getHost()):
+            messageInfo.setHttpService(self._helpers.buildHttpService(HOST_TO,
+                httpService.getPort(), httpService.getProtocol()))
